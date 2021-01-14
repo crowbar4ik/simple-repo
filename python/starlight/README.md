@@ -1,7 +1,7 @@
 # github_integration
 github_integration is a python project to load data from GitHub and store in Snowflake datawarehouse.
 
-GITHUB
+**GITHUB
 
 The Source of the data is GitHub. 
 
@@ -16,7 +16,7 @@ According to above, let's put some details about Pull request from GitHub.
 4. Pull Request with lower ID can be merged after Pull Request with higher ID. 
    To track this we can use: Pull Request Updated Time.    
 	
-The main goals during development were:
+**The main goals during development were:
 
 1. Performance 
 2. Reduce GitHub API call
@@ -25,7 +25,7 @@ The main goals during development were:
 
 To achive above goals, there was a decision to use GraphQL GitHub API. 
 
-There are 2 types of GraphQL queries will be running:
+**There are 2 types of GraphQL queries will be running:
 
 PullRequests query:
 
@@ -38,7 +38,7 @@ PullRequest query:
 1. All details about exact pull request.
 2. This query will be used, when app will need to use pagination across files.
 
-Communication workflow with GitHub API:
+**Communication workflow with GitHub API:
 
 1. Query API for first chunk (query limit is 100) of Pull Requests.
 2. Process first Pull Request: get Pull Request Details, get Files details.
@@ -46,7 +46,7 @@ Communication workflow with GitHub API:
 4. Process rest Pulls requests from the first chunk.
 5. Go to the step 1, for the next chunk of Pull Requests.
 
-Snowflake data warehouse:
+**Snowflake data warehouse:
 
 There was been set up simple data model, using snowflake-sqlalchemy ORM:
 
@@ -56,14 +56,14 @@ PullRequestsFiles - Pull Requests with corresponding list of Files. Pull Request
 					
 There is one-to-many relationship set up between PullRequests and PullRequestsFiles Table.
 
-Upload history/Upload latest
+**Upload history/Upload latest
 
 Before running data from GitHub to Snowflake, app will take 2 values from Snowflake:
 
 maximum Pull Request ID
 latest Pull Request updated time
 
-If Model has no data yet, those will be set to 0 and "1970-01-01".
+**If Model has no data yet, those will be set to 0 and "1970-01-01".
 
 1. Requesting data from GitHub, app will always check for the Pull Requests with:
    Id > maximum Pull Request ID OR
