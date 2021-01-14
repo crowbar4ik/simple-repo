@@ -3,16 +3,16 @@ github_integration is a python project to load data from GitHub and store in Sno
 
 **Application pre-installation:**
 
-Python 3.7.x 
-virtualenv (https://docs.python.org/3.7/library/venv.html)
+- Python 3.7.x 
+- virtualenv (https://docs.python.org/3.7/library/venv.html)
 
 **Application usage:**
 
-1. ../github_data_loader.py **-is_load** no **-is_query** yes
+../github_data_loader.py **-is_load** no **-is_query** yes
 
 There are 2 input paramters, which application get, during call.
-**-is_load** {"yes", "no", 0, 1, "t", "y"} - required, identify - do app need load data to Snowflake dwh.
-**-is_query** {"yes", "no", 0, 1, "t", "y"} - required, identify - do app need query data from Snowflake dwh. 
+- **-is_load** {"yes", "no", 0, 1, "t", "y"} - required, identify - do app need load data to Snowflake dwh.
+- **-is_query** {"yes", "no", 0, 1, "t", "y"} - required, identify - do app need query data from Snowflake dwh. 
 
 **GITHUB**
 
