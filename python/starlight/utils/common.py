@@ -9,7 +9,9 @@ import datetime as dt
 from datetime import timezone
 from functools import wraps
 
+logger = logging.getLogger("startlight")
 PACKAGE_ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
+
 
 def configurable(config_path=None):
     def _decorator(function):
@@ -76,3 +78,14 @@ def utc_to_local(utc_dt):
         .replace(tzinfo=timezone.utc) \
         .astimezone(tz=None) \
         .replace(tzinfo=None)
+
+
+def str2bool(v):
+    if isinstance(v, bool):
+        return v
+    if v.lower() in ('yes', 'true', 't', 'y', '1'):
+        return True
+    elif v.lower() in ('no', 'false', 'f', 'n', '0'):
+        return False
+    else:
+        raise argparse.ArgumentTypeError('Boolean value expected.')

@@ -1,6 +1,7 @@
 from sqlalchemy import Column, String, Integer, DateTime, Boolean, ForeignKey
 from sqlalchemy.orm import relationship
 from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.sql.expression import func
 import logging
 
 logger = logging.getLogger("startlight")
@@ -39,3 +40,10 @@ class PullRequestsFiles(Base):
     def __init__(self, pull_request_id, file_name):
         self.pull_request_id = pull_request_id
         self.file_name = file_name
+
+    @classmethod
+    def get(cls):
+        return cls.query(PullRequestsFiles.file_name, func.count(PullRequestsFiles.pull_request_id)) \
+            .group_by(PullRequestsFiles.file_name) \
+            .order_by(func.count(PullRequestsFiles.pull_request_id).desc()) \
+            .limit(3).all()
