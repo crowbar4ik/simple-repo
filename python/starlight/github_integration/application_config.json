@@ -1,0 +1,27 @@
+{
+  "meta": {
+    "service_name": "GiHub API data loader",
+    "version": "0.1"
+  },
+  "github_common": {
+    "repo_owner": "apache",
+    "repo_name": "kafka",
+    "token": "",
+    "items_per_page": 100,
+    "pr_state": "ALL",
+    "pr_is_merged": "True",
+    "graphql_api_url": "https://api.github.com/graphql",
+    "graphql_pr_path": "graphql/pull_request.graphql",
+    "graphql_prs_path": "graphql/pull_requests.graphql"
+  },
+  "snowflake_connection": {
+    "host": "",
+    "user": "",
+    "password": "",
+    "account": "",
+    "warehouse": "",
+    "database": "",
+    "schema": "PUBLIC",
+    "protocol": "https"
+  }
+}

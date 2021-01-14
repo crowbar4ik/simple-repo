@@ -1,0 +1,20 @@
+{
+  repository(owner: "{{ repo_owner | sqlsafe }}", name: "{{ repo_name | sqlsafe }}") {
+    pullRequest(number: {{ pr_number | sqlsafe }}) {
+      id
+      number
+      title
+      files(first: {{ items_per_page | sqlsafe }}, after: "{{ file_cursor | sqlsafe }}") {
+        edges {
+          node {
+            path
+          }
+        }
+        pageInfo {
+          hasNextPage
+          endCursor
+        }
+      }
+    }
+  }
+}
