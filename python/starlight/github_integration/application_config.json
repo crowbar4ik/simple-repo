@@ -6,7 +6,7 @@
   "github_common": {
     "repo_owner": "apache",
     "repo_name": "kafka",
-    "token": "",
+    "token": "d4f6aca87da2225355ca2d6911b023f828fcd809",
     "items_per_page": 100,
     "pr_state": "ALL",
     "pr_is_merged": "True",
@@ -15,12 +15,12 @@
     "graphql_prs_path": "graphql/pull_requests.graphql"
   },
   "snowflake_connection": {
-    "host": "",
-    "user": "",
-    "password": "",
-    "account": "",
-    "warehouse": "",
-    "database": "",
+    "host": "ux53757.eu-central-1.snowflakecomputing.com",
+    "user": "CROWBAR4IK",
+    "password": "Danton17er",
+    "account": "ux53757.eu-central-1",
+    "warehouse": "COMPUTE_WH",
+    "database": "GITHUB_DB",
     "schema": "PUBLIC",
     "protocol": "https"
   }

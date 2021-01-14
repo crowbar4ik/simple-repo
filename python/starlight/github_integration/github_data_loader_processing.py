@@ -16,15 +16,63 @@ PACKAGE_ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
 
 class GitHubDataLoaderProcessing:
 
-    def __init__(self, application_config):
+    def __init__(self, application_config, is_load, is_query):
         self.github_common = application_config["github_common"]
         self.engine = create_engine(URL(**application_config["snowflake_connection"]))
         self.jinja_format = JinjaSql(param_style='pyformat')
         self.headers = {'Authorization': 'Bearer ' + self.github_common["token"], }
+        self.is_load = is_load
+        self.is_query = is_query
 
     def run(self):
+
         session = self.create_model()
         logger.info(f"Database model has been created successfully")
+
+        if self.is_load:
+            logger.info(f"Start loading data from GitHub to Snowflake")
+            self.query_pulls(session)
+
+        if self.is_query:
+            if self.get_max_pr_id(session) > 0:
+                merged_max = self.get_max_pr_merge_time(session)
+                merged_min = self.get_min_pr_merge_time(session)
+                merged_avg = self.get_avg_pr_merge_time(session)
+                logger.info(f"Start quering Snowflake data warehouse")
+                logger.info(f"Max Pull Request time to merge: {int(merged_max / (60 * 60 * 24))} days")
+                logger.info(f"Min Pull Request time to merge: {merged_min} seconds")
+                logger.info(f"Avg Pull Request time to merge: {int(merged_avg / (60 * 60 * 24))} days")
+
+                most_files_changed_result = self.get_most_often_changed_files(session)
+                logger.info(f"Top 3 files changed in Pull Requests:")
+                for i in most_files_changed_result:
+                    logger.info(f"{i}")
+            else:
+                logger.warn(f"Snowflake data warehouse is empty. Please load data, before querying")
+        session.close()
+
+    def create_model(self):
+        Base.metadata.create_all(self.engine, checkfirst=True)
+        Session = sessionmaker()
+        Session.configure(bind=self.engine)
+        return Session()
+
+    def read_query_from_template(self, template_path, params):
+        with open(template_path) as f:
+            graphql = f.read()
+        query, bind_params = self.jinja_format.prepare_query(graphql, params)
+        return query
+
+    def get_pull_requests_params(self, pr_end_cursor):
+        final_pr_cursor = "" if not pr_end_cursor else ', after: "{}"'.format(pr_end_cursor)
+        return {
+            'repo_owner': self.github_common["repo_owner"],
+            'repo_name': self.github_common["repo_name"],
+            'items_per_page': self.github_common["items_per_page"],
+            'pr_cursor': final_pr_cursor
+        }
+
+    def query_pulls(self, session):
         pr_max_id = self.get_max_pr_id(session)
         logger.info(f"Max PullRequest Id is {pr_max_id}")
         pr_max_updated_time = self.get_max_pr_updated(session)
@@ -74,28 +122,7 @@ class GitHubDataLoaderProcessing:
                         for pull in pull_files_all:
                             session.merge(pull)
             session.commit()
-        session.close()
-
-    def create_model(self):
-        Base.metadata.create_all(self.engine, checkfirst=True)
-        Session = sessionmaker()
-        Session.configure(bind=self.engine)
-        return Session()
-
-    def read_query_from_template(self, template_path, params):
-        with open(template_path) as f:
-            graphql = f.read()
-        query, bind_params = self.jinja_format.prepare_query(graphql, params)
-        return query
-
-    def get_pull_requests_params(self, pr_end_cursor):
-        final_pr_cursor = "" if not pr_end_cursor else ', after: "{}"'.format(pr_end_cursor)
-        return {
-            'repo_owner': self.github_common["repo_owner"],
-            'repo_name': self.github_common["repo_name"],
-            'items_per_page': self.github_common["items_per_page"],
-            'pr_cursor': final_pr_cursor
-        }
+        return session
 
     def query_pull(self, pull_request_number, file_end_cursor):
         pr_params = {
@@ -146,10 +173,16 @@ class GitHubDataLoaderProcessing:
             else dt.datetime.strptime("1900-01-01", '%Y-%m-%d')
 
     def get_max_pr_merge_time(self, session):
-        return session.query(func.max(func.datediff('second', PullRequests.created_time, PullRequests.merged_time)),
-                             func.avg(func.datediff('second', PullRequests.created_time, PullRequests.merged_time)),
-                             func.min(func.datediff('second', PullRequests.created_time, PullRequests.merged_time))) \
-            .filter(PullRequests.state == "MERGED").first()
+        return session.query(func.max(func.datediff('second', PullRequests.created_time, PullRequests.merged_time))) \
+            .filter(PullRequests.state == "MERGED").scalar()
+
+    def get_min_pr_merge_time(self, session):
+        return session.query(func.min(func.datediff('second', PullRequests.created_time, PullRequests.merged_time))) \
+            .filter(PullRequests.state == "MERGED").scalar()
+
+    def get_avg_pr_merge_time(self, session):
+        return session.query(func.avg(func.datediff('second', PullRequests.created_time, PullRequests.merged_time))) \
+            .filter(PullRequests.state == "MERGED").scalar()
 
     def get_most_often_changed_files(self, session):
         return session.query(PullRequestsFiles.file_name, func.count(PullRequestsFiles.pull_request_id))\
