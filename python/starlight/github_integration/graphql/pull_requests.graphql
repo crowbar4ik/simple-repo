@@ -1,0 +1,30 @@
+{
+  repository(owner: "{{ repo_owner | sqlsafe }}", name: "{{ repo_name | sqlsafe }}") {
+    pullRequests(first: {{ items_per_page | sqlsafe }} {{ pr_cursor | sqlsafe }}, orderBy: {field: CREATED_AT, direction: ASC}) {
+      pageInfo {
+        hasNextPage
+        endCursor
+      }
+      nodes {
+        number
+        title
+        state
+        merged
+        createdAt
+        updatedAt
+        mergedAt
+        files(first: {{ items_per_page | sqlsafe }}) {
+          edges {
+            node {
+              path
+            }
+          }
+          pageInfo {
+            hasNextPage
+            endCursor
+          }
+        }
+      }
+    }
+  }
+}

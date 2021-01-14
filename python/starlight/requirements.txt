@@ -1,0 +1,2 @@
+snowflake-sqlalchemy==1.2.4
+jinjasql==0.1.8
